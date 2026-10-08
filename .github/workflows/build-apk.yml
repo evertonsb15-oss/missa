@@ -12,6 +12,9 @@ jobs:
       - name: Baixar código
         uses: actions/checkout@v4
 
+      - name: Montar interface HTML
+        run: cat app/src/main/assets/index.part* > app/src/main/assets/index.html
+
       - name: Configurar Java 17
         uses: actions/setup-java@v4
         with:
