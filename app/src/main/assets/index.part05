@@ -1,0 +1,37 @@
+nFazes vibrar nosso ser, indo ao encontro ao Pai Santo\nE          A            E      F#m\nSem descuidar dos irmãos, mil faces da tua face\nB7                            A     B7               E B7\nFazes que o coração sinta a força da caridade"}, {"page": 15, "title": "FINAL (número 27 do folheto azul)", "content": "FINAL (número 27 do folheto azul)\nGm           F            Eb               D7          Gm\nVem Maria vem! Vem nos ajudar ,nesse caminhar tão difícil rumo ao Pai\nGm           F            Eb               D7          Gm\nVem Maria vem! Vem nos ajudar , nesse caminhar tão difícil rumo ao Pai\nGm                 Cm     F                A#\nVem querida mãe nos ensinar . A ser testemunha do amor\nEb                     Cm         D7               Gm\nQue fez do seu corpo sua morada. Que se abriu pra receber o Salvador\n\nGm            F           Eb               D7           Gm\nVem Maria vem! Vem nos ajudar ,nesse caminhar tão difícil rumo ao Pai\nGm            F           Eb               D7           Gm\nVem Maria vem! Vem nos ajudar , nesse caminhar tão difícil rumo ao Pai\n\nGm                  Cm    F                A#\nNós queremos ó mãe responder, Ao amor do Cristo Salvador.\nEb                     Cm         D7              Gm\nCheios de ternura colocamos, Confiantes em suas mãos esta oração.\n\nGm            F           Eb               D7           Gm\nVem Maria vem! Vem nos ajudar ,nesse caminhar tão difícil rumo ao Pai\nGm            F           Eb               D7           Gm\nVem Maria vem! Vem nos ajudar , nesse caminhar tão difícil rumo ao Pai"}, {"page": 16, "title": "FINAL 2", "content": "FINAL 2\nD                     A7\nUm dia escutei teu chamado\n            Bm            A G D\nDivino recado batendo no coração\nG                      D\nDeixei deste mundo as promessas\n                A7            G A D\nE fui bem depressa no rumo da Tua mão\n\n\nD7                 G\nTu és a razão da jornada\n               A7         G         D\nTu és minha estrada, meu guia, meu fim\nD7                        G\nNo grito que vem do teu povo\n               A         G         D A7\nTe escuto de novo, chamando por mim"}, {"page": 17, "title": "FINAL 3", "content": "FINAL 3\n\nEm\nViva a mãe de Deus e nossa\n        B7\nSem pecado concebida\n          Am\nViva a Virgem Imaculada\n B7       Em\nA Senhora Aparecida\n   E7      Am\nAqui estão vossos devotos\n B7        Em\nCheios de fé incendida\n   C     B\nDe conforto e de esperança\n B7      Em\nÓ Senhora Aparecida\nE7         Am\nVirgem santa, Virgem bela\n B7       Em\nMãe amável, mãe querida\n C    B\nAmparai-nos, socorrei-nos\nC B7     Em\nÓ Senhora Aparecida\nE7         Am\nProtegei a santa igreja\n B7         Em\nMãe terna e compadecida\n  C       B\nProtegei a nossa pátria\n B7      Em\nÓ Senhora Aparecida"}, {"page": 18, "title": "FINAL 4", "content": "FINAL 4\nG                  C\n Imaculada Maria de Deus\n         D7             G D7\nCoração pobre, acolhendo Jesus\n  G                  C\nImaculada Maria do povo\n          D7             G\nMãe dos aflitos que estão junto à cruz\n    G                     C\nUm coração que era sim para a vida\n      D7                 G\nUm coração que era sim para o irmão\n    C              D7       G\nUm coração que era sim para Deus\nE    Am     D7           G\nReino de Deus renovando este chão\n\n\n\n     G                C\nOlhos abertos pra sede do povo\n          D7             G\nPasso bem firme que o medo desterra\n       C             D7     G\nMãos estendidas que os tronos renegam\nE      Am        D7        G\nReino de Deus que renova esta terra"}];
+const STORE='canticos_v2';
+const DEFAULT_PLAYLIST_ID='pl-missa-mes-missionario-santa-casa';
+const DEFAULT_PLAYLIST_NAME='Missa Mês Missionário Santa Casa';
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+function ensureMissionaryPlaylist(d){
+  const originalIds=d.songs.filter(s=>s.source==='original'||String(s.id||'').startsWith('base-')).map(s=>s.id);
+  let p=d.playlists.find(x=>x.id===DEFAULT_PLAYLIST_ID);
+  if(!p){
+    p={id:DEFAULT_PLAYLIST_ID,name:DEFAULT_PLAYLIST_NAME,songIds:[...originalIds],systemDefault:true};
+    d.playlists.unshift(p);
+  }else{
+    p.name=DEFAULT_PLAYLIST_NAME;
+    p.systemDefault=true;
+    const extras=(p.songIds||[]).filter(id=>!originalIds.includes(id));
+    p.songIds=[...originalIds,...extras];
+  }
+  return d;
+}
+function loadData(){
+  try{
+    const x=JSON.parse(localStorage.getItem(STORE)||'null');
+    if(x&&x.songs&&x.playlists)return ensureMissionaryPlaylist(x);
+  }catch(e){}
+  return ensureMissionaryPlaylist({songs:builtInSongs.map((s,i)=>({...s,id:'base-'+(i+1),source:'original'})),playlists:[]});
+}
+let data=loadData();
+localStorage.setItem(STORE,JSON.stringify(data));
+function saveData(){localStorage.setItem(STORE,JSON.stringify(data))}
+let activePlaylistId=localStorage.getItem('activePlaylistId')||'';
+let currentId=localStorage.getItem('songId')||data.songs[0]?.id;
+let manualScale=Number(localStorage.getItem('fontScale')||1);
+const $=id=>document.getElementById(id), lyrics=$('lyrics'), title=$('songTitle'), counter=$('counter'), stage=$('stage'), select=$('pageSelect'), drawer=$('drawer'), list=$('list');
+function activeSequence(){const p=data.playlists.find(x=>x.id===activePlaylistId);if(!p)return data.songs;return p.songIds.map(id=>data.songs.find(s=>s.id===id)).filter(Boolean)}
+function currentSong(){return data.songs.find(s=>s.id===currentId)||activeSequence()[0]||data.songs[0]}
+function ensureCurrent(){const seq=activeSequence();if(!seq.length){activePlaylistId='';localStorage.removeItem('activePlaylistId');return ensureCurrent()}if(!seq.some(s=>s.id===currentId))currentId=seq[0].id}
+function fitText(){const s=currentSong();if(!s)return;const cs=getComputedStyle(lyrics),family=cs.fontFamily,max=22*manualScale,min=11.5,canvas=fitText.canvas||(fitText.canvas=document.createElement('canvas')),ctx=canvas.getContext('2d'),available=Mat
